@@ -40,13 +40,15 @@ class PagesGetter(Thread):
 
     def collect_data(self):
         ll = len(self.goods)
+        shop = self.platform
         for order, row_id in enumerate(self.goods, 1):
             url = self.goods[row_id]['url']
             wait_time = randint(4, 9)
-            print(f'{self.platform:>10} ({order} / {ll:03}), waiting: {wait_time} | connecting to url: {url}')
+            print(f'{shop :>10} ({order:03}/{ll:03}), row: {row_id}, wait: {wait_time} | connect to url: {url}')
             self.get_page(url, wait_time)
             self.save_page(row_id)
             self.parse_page(row_id)
+        print('-' * 30, f'{shop} data collected', '-' * 30)
 
     def get_page(self, url, wait_time):
         try:
@@ -80,7 +82,7 @@ class PagesGetter(Thread):
 
     def save_json(self):
         with open(f'{self.folder}/{self.platform}.json', 'w', encoding='utf8') as fp:
-            json.dump(self.goods, fp, ensure_ascii=False)
+            json.dump(self.platform_results, fp, ensure_ascii=False)
 
     def parse_akson(self):
         search_rating_value = self.soup.findAll('span', {"itemprop": "ratingValue"})
