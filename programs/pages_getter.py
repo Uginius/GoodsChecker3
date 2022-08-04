@@ -2,12 +2,12 @@ import json
 import time
 from random import randint
 from threading import Thread
-
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from config import selenium_arguments, browser_path, today, req_headers
+from programs.parsers import parsers
 from utilites import check_dir
 
 
@@ -16,15 +16,16 @@ class PagesGetter(Thread):
         super().__init__()
         self.platform = platform
         self.goods = goods
-        self.use_selenium = platform in ['dns', 'baucenter']
+        self.use_selenium = platform in ['dns']
         self.browser = None
         self.folder = f'htmls/{today}'
         self.loaded_html = None
         self.platform_results = {}
         self.soup = None
+        self.row_id = None
 
     def run(self):
-        if self.platform != 'akson':  # only this platform
+        if self.platform not in ['maxidom']:  # only this
             return
         check_dir(self.folder)
         if self.use_selenium:
@@ -41,7 +42,8 @@ class PagesGetter(Thread):
     def collect_data(self):
         ll = len(self.goods)
         shop = self.platform
-        for order, row_id in enumerate(self.goods, 1):
+        for order, self.row_id in enumerate(self.goods, 1):
+            row_id = self.row_id
             url = self.goods[row_id]['url']
             wait_time = randint(4, 9)
             print(f'{shop :>10} ({order:03}/{ll:03}), row: {row_id}, wait: {wait_time} | connect to url: {url}')
@@ -50,7 +52,8 @@ class PagesGetter(Thread):
             self.parse_page(row_id)
         print('-' * 30, f'{shop} data collected', '-' * 30)
 
-    def get_page(self, url, wait_time):
+    def get_page(self, link, wait_time):
+        url = self.set_url(link)
         try:
             if self.use_selenium:
                 self.browser.get(url=url)
@@ -64,16 +67,22 @@ class PagesGetter(Thread):
             print('getting data ERROR', '*' * 50, ex)
             self.loaded_html = None
 
+    def set_url(self, link):
+        match self.platform:
+            case 'maxidom':
+                merch_id = self.goods[self.row_id]['shop id']
+                url = f'https://www.maxidom.ru/ajax/mneniya_pro/getReviewsHtml.php?SKU_ID={merch_id}'
+            case _:
+                url = link
+        return url
+
     def parse_page(self, merch_id):
-        self.soup = BeautifulSoup(self.loaded_html, 'lxml')
+        platform = self.platform
         try:
-            match self.platform:
-                case 'akson':
-                    self.platform_results[merch_id] = self.parse_akson()
-                case _:
-                    pass
+            self.platform_results[merch_id] = parsers[platform](BeautifulSoup(self.loaded_html, 'lxml'))
         except Exception as ex:
-            print(f'Error on getting data from {merch_id}', '*' * 50, ex)
+            self.platform_results[merch_id] = [None, None]
+            print(f'Error on getting data from {merch_id}_{platform}', '*' * 50, ex)
 
     def save_page(self, merch_id):
         filename = f'{self.folder}/{merch_id}_{self.platform}.html'
@@ -83,12 +92,3 @@ class PagesGetter(Thread):
     def save_json(self):
         with open(f'{self.folder}/{self.platform}.json', 'w', encoding='utf8') as fp:
             json.dump(self.platform_results, fp, ensure_ascii=False)
-
-    def parse_akson(self):
-        search_rating_value = self.soup.findAll('span', {"itemprop": "ratingValue"})
-        if search_rating_value:
-            rating_value = float(search_rating_value[0].text)
-        else:
-            return [None, None]
-        review_count = int(self.soup.findAll('span', {"itemprop": 'reviewCount'})[0].text)
-        return [rating_value, review_count]
