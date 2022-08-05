@@ -23,8 +23,8 @@ def check_dir(directory):
         os.makedirs(directory)
 
 
-def get_last_dir():
-    pages_dir_from_os = os.listdir('htmls')
+def get_last_dir(folder='htmls'):
+    pages_dir_from_os = os.listdir(folder)
     loaded_dirs = []
     for el in pages_dir_from_os:
         checking_dir = re.findall(dir_date_template, el)
