@@ -25,7 +25,7 @@ class PagesGetter(Thread):
         self.row_id = None
 
     def run(self):
-        if self.platform not in ['maxidom']:  # only this
+        if self.platform not in ['akson']:  # only this
             return
         check_dir(self.folder)
         if self.use_selenium:

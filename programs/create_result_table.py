@@ -26,6 +26,7 @@ def update_table(table, data):
         if not value:
             continue
         rating_cell.value, votes_cell.value = value
+    table.save('result.xlsx')
 
 
 def update_result_table(xls_table):
