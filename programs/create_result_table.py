@@ -3,9 +3,11 @@ import os
 from utilites import get_last_dir
 from openpyxl import load_workbook
 
+last_dir = get_last_dir()
+
 
 def read_data_from_json():
-    folder = 'htmls/' + get_last_dir()
+    folder = 'htmls/' + last_dir
     json_files = [filename for filename in os.listdir(folder) if 'json' in filename]
     data = {}
     for filename in json_files:
@@ -26,7 +28,7 @@ def update_table(table, data):
         if not value:
             continue
         rating_cell.value, votes_cell.value = value
-    table.save('result.xlsx')
+    table.save(f'results/{last_dir}.xlsx')
 
 
 def update_result_table(xls_table):

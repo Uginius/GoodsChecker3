@@ -3,6 +3,7 @@ from programs.pages_getter import PagesGetter
 from utilites import read_table, time_track
 
 table_name = 'src/goods_tp.xlsx'
+correct_table_name = 'src/rosel_products.xlsx'
 
 
 @time_track
@@ -20,5 +21,5 @@ def data_to_xls():
 
 
 if __name__ == '__main__':
-    # get_pages()
+    get_pages()
     data_to_xls()

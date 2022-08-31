@@ -25,8 +25,8 @@ class PagesGetter(Thread):
         self.row_id = None
 
     def run(self):
-        if self.platform not in ['akson']:  # only this
-            return
+        # if self.platform not in ['votonia']:  # only this
+        #     return
         check_dir(self.folder)
         if self.use_selenium:
             self.initiate_browser()
@@ -72,17 +72,20 @@ class PagesGetter(Thread):
             case 'maxidom':
                 merch_id = self.goods[self.row_id]['shop id']
                 url = f'https://www.maxidom.ru/ajax/mneniya_pro/getReviewsHtml.php?SKU_ID={merch_id}'
+            case 'sdvor':
+                merch_id = self.goods[self.row_id]['shop id']
+                url = f'https://www.sdvor.com/api/mneniya-pro/v1.3/reviews/Product/{merch_id}/All'
             case _:
                 url = link
         return url
 
-    def parse_page(self, merch_id):
+    def parse_page(self, row_id):
         platform = self.platform
         try:
-            self.platform_results[merch_id] = parsers[platform](BeautifulSoup(self.loaded_html, 'lxml'))
+            self.platform_results[row_id] = parsers[platform](self.loaded_html)
         except Exception as ex:
-            self.platform_results[merch_id] = [None, None]
-            print(f'Error on getting data from {merch_id}_{platform}', '*' * 50, ex)
+            self.platform_results[row_id] = [None, None]
+            print(f'Error on getting data from {row_id}_{platform}', '*' * 50, ex)
 
     def save_page(self, merch_id):
         filename = f'{self.folder}/{merch_id}_{self.platform}.html'
