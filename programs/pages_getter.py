@@ -31,6 +31,8 @@ class PagesGetter(Thread):
         if self.use_selenium:
             self.initiate_browser()
         self.collect_data()
+        if self.browser:
+            self.browser.close()
         self.save_json()
 
     def initiate_browser(self):
