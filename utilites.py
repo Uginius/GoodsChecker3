@@ -19,8 +19,12 @@ def time_track(func):
 
 
 def check_dir(directory):
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    try:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+    except Exception as ex:
+        print(ex)
+
 
 
 def get_last_dir(folder='htmls'):
